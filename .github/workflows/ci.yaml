@@ -1,0 +1,38 @@
+name: CI   # Workflow name
+
+on:        # Trigger: when should this workflow run?
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:       # Define jobs
+  test:     # Job name
+    runs-on: ubuntu-latest   # Environment (runner)
+
+    steps:   # Steps in this job
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        # Action: downloads repo code
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+        # Action: installs Node.js runtime
+
+      - name: Install dependencies
+        run: npm install
+        # Step: runs shell command inside runner
+
+      - name: Run tests
+        run: npm test
+        # Step: runs Jest tests
+
+      - name: Send Discord notification on success
+        if: success()
+        run: |
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d '{"content": "Tests passed for '${{ github.repository }}' on commit '${{ github.sha }}'"}' \
+            ${{ secrets.DISCORD_WEBHOOK }}
